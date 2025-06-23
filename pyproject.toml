@@ -1,0 +1,9 @@
+[project]
+name = "my-cosmic-agents"
+version = "0.1.0"
+description = "My Cosmic Agent Framework project"
+requires-python = ">=3.10"
+
+dependencies = [
+    "cosmicagentframework @ file://C:/Users/shrshinde/.cosmic-agent-framework/cosmicagentframework-0.9.0-py3-none-any.whl",
+]
