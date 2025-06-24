@@ -1,5 +1,5 @@
 name: cosmicAICluster
-description: test
+description: Cosmic AI Cluster Agent is used to get all the changes happened in a cluster until the provided time. Default it'll show past 6 hours of data and can be customized based on time provided.
 template_format: semantic-kernel
 template: |
   test
