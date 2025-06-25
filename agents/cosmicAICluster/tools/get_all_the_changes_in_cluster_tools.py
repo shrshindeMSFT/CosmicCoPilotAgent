@@ -13,7 +13,7 @@ def get_cluster_changes_tool(cluster: str, from_date: str, to_date: str):
     """
     cmdw = "https://cosmic-test-dw.eastus.kusto.windows.net/"
     query =f"""
-        let clusterID = cluster_cluster_global| where metadata.name == {cluster} | take 1|summarize  by id;
+        let clusterID = cluster_cluster_global| where metadata.name == "{cluster}" | take 1|summarize  by id;
         cluster_upgrade_history_global
         | where spec.resourceType == "Cluster" and spec.resourceId == toscalar(clusterID) and tobool(spec.active) and isnull(metadata.deleteTimestamp)
         | where _kustoTime between (datetime(2025-06-17) .. datetime(2025-06-24))
@@ -34,12 +34,12 @@ def get_cluster_changes_tool(cluster: str, from_date: str, to_date: str):
     kustoUtil = KustoUtils(cluster_url=cmdw, database_name="CosmicInventoryHistory")
     # kustoClient = KustoClient(cmdw)
     try:
-        print(f"Executing query: {query}")
-        result = kustoUtil.query(query=query)
+        print(f"Executing query...")
+        result = kustoUtil.query(query=query).to_json(date_format="iso", indent=2)
     except Exception as e:
         print(f"Error querying cluster {cluster}: {e}")
         return None
-    print(f"Found {len(result)} {result} changes in cluster {cluster} from {from_date} to {to_date}")
+    print(f"Found {result} changes in cluster {cluster} from {from_date} to {to_date}")
     return result
 
 
