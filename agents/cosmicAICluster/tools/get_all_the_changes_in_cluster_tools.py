@@ -1,13 +1,11 @@
-
-def get_cluster_changes_tool(cluster: str, from_date: str, to_date: str):
+def get_cluster_events_tool(cluster: str, from_date: str, to_date: str):
     """
-    This tool retrieves all the changes made in the cluster.
+    This tool retrieves os patching events in the cluster.
     It is used to track modifications and updates within the cluster environment.
-
     Args:
         cluster (str): The name of the cluster to query.
-        from_date (str): The start date for the query in ISO format (YYYY-MM-DD).
-        to_date (str): The end date for the query in ISO format (YYYY-MM-DD
+        from_date (str): The start date for the query in ISO format (YYYY-MM-DD HH:TT:SS).
+        to_date (str): The end date for the query in ISO format (YYYY-MM-DD HH:TT:SS)
     Returns:
         KustoClient: An instance of KustoClient with the results of the query.
     """
@@ -16,7 +14,7 @@ def get_cluster_changes_tool(cluster: str, from_date: str, to_date: str):
         let clusterID = cluster_cluster_global| where metadata.name == "{cluster}" | take 1|summarize  by id;
         cluster_upgrade_history_global
         | where spec.resourceType == "Cluster" and spec.resourceId == toscalar(clusterID) and tobool(spec.active) and isnull(metadata.deleteTimestamp)
-        | where _kustoTime between (datetime(2025-06-17) .. datetime(2025-06-24))
+        | where _kustoTime between (datetime({from_date}) .. datetime({to_date}))
         | order by id, _kustoTime asc
         | extend Time = _kustoTime, Train = tostring(spec.upgradeType), Build = tostring(spec.version), IsStart = row_number(1, prev(id) != id) == 1, IsEnd = next(id) != id
         | extend Type = case(
@@ -26,20 +24,24 @@ def get_cluster_changes_tool(cluster: str, from_date: str, to_date: str):
         ""
         )| where isnotempty(Type)
         | summarize by Train, Build, Type,Time
-        | order by Time asc
         """
+
     query = query.replace(r"\|", r"|")
+   
     # cosmic-msit-spo01-001-northcentralus-aks
     print(f"Querying cluster {cluster} for changes from {from_date} to {to_date}")
     kustoUtil = KustoUtils(cluster_url=cmdw, database_name="CosmicInventoryHistory")
     # kustoClient = KustoClient(cmdw)
+    
     try:
         print(f"Executing query...")
-        result = kustoUtil.query(query=query).to_json(date_format="iso", indent=2)
+        # result = kustoUtil.query(query=query).to_json(date_format="iso", indent=2)
+        result = kustoUtil.query(query=query).to_string()
     except Exception as e:
         print(f"Error querying cluster {cluster}: {e}")
         return None
-    print(f"Found {result} changes in cluster {cluster} from {from_date} to {to_date}")
+    
+    print(f"Found2 {result} changes in cluster {cluster} from {from_date} to {to_date}")
     return result
 
 
